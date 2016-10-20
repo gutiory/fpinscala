@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -49,20 +51,76 @@ object List { // `List` companion object. Contains functions for creating and wo
   def product2(ns: List[Double]) =
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
+  // EX 3.2
+  def tail[A](l: List[A]): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, xs) => xs
+  }
 
-  def tail[A](l: List[A]): List[A] = sys.error("todo")
+  // EX 3.3
+  def setHead[A](l: List[A], h: A): List[A] = l match  {
+    case Nil => Cons(h, Nil)
+    case Cons(x, xs) => Cons(h, xs)
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = sys.error("todo")
+  // EX 3.4
+  def drop[A](l: List[A], n: Int): List[A] =
+    if(n == 0) l
+    else drop(tail(l), n - 1)
 
-  def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
-
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
+  // EX 3.5
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Nil => Nil
+    case Cons(x, xs) =>
+      if(f(x)) dropWhile(xs, f)
+      else l
+  }
 
   def init[A](l: List[A]): List[A] = sys.error("todo")
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  // EX 3.9
+  def length[A](l: List[A]): Int = foldRight(l, 0)((x, z) => z + 1)
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  // EX 3.10
+  @tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+    l match {
+      case Nil =>
+        println(z)
+        z
+      case Cons(x, xs) =>
+        println("foldLeft(" + xs.toString + ", f(" + x + "," + z + "))")
+        foldLeft(xs,f(z,x))(f)
+    }
+  }
+
+  // EX 3.11
+  def sumFoldLeft(l : List[Int]) = foldLeft(l, 0)(_ + _)
+
+  def prodFoldLeft(l : List[Double]) = foldLeft(l, 1.0)(_ * _)
+
+  def lengthFoldLeft[A](l : List[A]) = foldLeft(l, 0)((z, x) => z + 1)
+
+  // EX 3.12
+  def reverse[A](as: List[A]) = {
+    def iter(xs: List[A], acum: List[A]) : List[A] = xs match {
+      case Nil => acum
+      case Cons(x, xt) => iter(xt, Cons(x, acum))
+    }
+    iter(as, Nil)
+  }
+
+  def reverseFold[A](as: List[A]) : List[A] = foldLeft(as, List[A]()) ((h, acc) => Cons(acc, h))
+
+  // EX 3.13
+  def foldLeftViaFoldRight[A,B](as: List[A], z: B)(f: (B, A) => B): B = foldRight(as, z)((x, y) => f(y, x))
+
+  def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f:(A, B) => B) : B = foldLeft(as, z)((x,y) => f(y,x))
+
+  // EX 3.14
+  def appendFoldRight[A](xs: List[A], elem: A) = {
+
+  }
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
