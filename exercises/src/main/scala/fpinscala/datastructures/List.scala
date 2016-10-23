@@ -118,9 +118,37 @@ object List { // `List` companion object. Contains functions for creating and wo
   def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f:(A, B) => B) : B = foldLeft(as, z)((x,y) => f(y,x))
 
   // EX 3.14
-  def appendFoldRight[A](xs: List[A], elem: A) = {
+  def appendFoldRight[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2)(Cons(_, _))
 
+  // EX 3.15
+  def appendLists[A](as: List[List[A]]) : List[A] = {
+    def iter(current: List[List[A]], acum: List[A]) : List[A] = current match {
+      case Nil => acum
+      case Cons(h, t) => iter(t, append(acum, h))
+    }
+    iter(as, Nil)
   }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def appendListsFR[A](as: List[List[A]]) : List[A] =  foldRight(as, Nil:List[A])(append)
+
+  // EX 3.16
+  def addOne(as: List[Int]) : List[Int] = foldRight(as, List[Int]())((x, z) => Cons(x + 1, z))
+
+  // EX 3.17
+  def doublesToStrings(as: List[Double]) : List[String] = foldRight(as, List[String]())((x,z) => Cons(x.toString, z) )
+
+  // EX 3.18
+  def map[A,B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]())((x, z) => Cons(f(x), z))
+
+  // EX 3.19
+  def filter[A](as: List[A])(f: A => Boolean) : List[A] = foldRight(as, List[A]())((x, z) => if(f(x)) Cons(x, z) else z)
+
+  // EX 3.20
+  def flatMap[A,B](as: List[A])(f: A => List[B]) : List[B] = foldRight(as, List[B]())((h, t) => append(f(h), t))
+
+  // EX 3.21
+  def filterViaFlatMap[A](as: List[A])(f: A => Boolean) : List[A] = flatMap(as)(x => if(f(x)) List(x) else List())
+
+  // EX 3.22
+  def add2ListInts[Int](l1: List[Int], l2: List[Int]) : List[Int] = sys.error("TODO")
 }
