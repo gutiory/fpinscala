@@ -150,5 +150,29 @@ object List { // `List` companion object. Contains functions for creating and wo
   def filterViaFlatMap[A](as: List[A])(f: A => Boolean) : List[A] = flatMap(as)(x => if(f(x)) List(x) else List())
 
   // EX 3.22
-  def add2ListInts[Int](l1: List[Int], l2: List[Int]) : List[Int] = sys.error("TODO")
+  def add2ListInts(l1: List[Int], l2: List[Int]) : List[Int] = (l1, l2) match {
+    case (_ , Nil) =>  Nil
+    case (Nil, _) => Nil
+    case (Cons(h1, t1),Cons(h2, t2)) => Cons(h1+h2, add2ListInts(t1, t2))
+  }
+
+  // EX 3.23
+  def zipWith[A,B,C](l1: List[A], l2: List[B])(f: (A,B) => C) : List[C] = (l1, l2) match {
+    case (_ , Nil) =>  Nil
+    case (Nil, _) => Nil
+    case (Cons(h1, t1),Cons(h2, t2)) => Cons(f(h1,h2), zipWith(t1, t2)(f))
+  }
+
+  // EX 3.24
+  def hasSubsequence[A](sup: List[A], sub:List[A]) : Boolean = {
+    println(sup + " ====== " + sub)
+    (sup,sub) match {
+      case (Nil, Nil) => true
+      case (Nil,_) => false
+      case (_, Nil) => true
+      case (Cons(supH, supT), Cons(subH, subT)) =>
+        if(supH == subH) hasSubsequence(supT, subT)
+        else hasSubsequence(dropWhile(Cons(supH, supT), (x:A) => x != subH) ,Cons(subH, subT))
+    }
+  }
 }
