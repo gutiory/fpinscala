@@ -46,9 +46,6 @@ trait Stream[+A] {
   def headOption: Option[A] =
     foldRight(None:Option[A]) ((h, t) => if(h == empty) None else Some(h))
 
-  // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
-  // writing your own function signatures.
-
   def map[B](f: A => B) : Stream[B] =
     foldRight(Stream[B]())((h, t) => cons[B](f(h), t))
 
@@ -61,7 +58,6 @@ trait Stream[+A] {
   def flatMap[B](f: A => Stream[B]) : Stream[B] =
     foldRight(Stream[B]())((h, t) => f(h).append(t))
 
-  // mapUnfold, takeUnfold, takeWhileUnfold, zipWith throw "is not a member of Stream[A]"
   def mapUnfold[B](f: A => B) : Stream[B] = unfold(this){
     case Cons(h, t) => Some((f(h()),t()))
     case _ => None
@@ -77,15 +73,33 @@ trait Stream[+A] {
     case _ => None
   }
 
-  def zipWith[B, C](b : Stream[B], f: (A,B) => C) : Stream[C] = unfold(this, b) {
+  def zipWith[B, C](b : Stream[B])(f: (A,B) => C) : Stream[C] = unfold(this, b) {
       case (Cons(ha, ta), Cons(hb, tb)) => Some(f(ha(), hb()), (ta(), tb()))
       case _ => None
   }
 
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = ???
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = unfold(this, s2){
+    case (Empty, Empty) => None
+    case (Empty, Cons(hb, tb)) => Some( (None, Some(hb())), (empty, tb()))
+    case (Cons(ha, ta), Empty) => Some( (Some(ha()), None), (ta(), empty))
+    case (Cons(ha, ta), Cons(hb, tb)) => Some( (Some(ha()), Some(hb())), (ta(), tb()))
 
+  }
 
-  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
+  def startsWith[B](s: Stream[B]): Boolean = zipAll(s).filter{
+    case (x,y) => x != None && y != None
+    }.forAll{
+      case (a,b) => a == b
+    }
+
+  def tails: Stream[Stream[A]] = ???
+    /*
+    unfold(Stream(this), this){
+    case (_, Empty) => None
+    case (Cons(Cons(h1, t1), t0), Cons(h2, t2)) => Some(Cons(h1, t1), )
+  }
+  */
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
