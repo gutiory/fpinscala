@@ -92,13 +92,16 @@ trait Stream[+A] {
       case (a,b) => a == b
     }
 
-  def tails: Stream[Stream[A]] = ???
-    /*
-    unfold(Stream(this), this){
-    case (_, Empty) => None
-    case (Cons(Cons(h1, t1), t0), Cons(h2, t2)) => Some(Cons(h1, t1), )
-  }
-  */
+  def tails: Stream[Stream[A]] =
+    unfold(this) {
+      case Empty => None
+      case s => Some((s, s.drop(1)))
+    }.append(empty)
+
+
+  def hasSubsequence[A](s :Stream[A]) : Boolean = tails.exists(_.startsWith(s))
+
+  def scanRight[B](z: => B)(f: (A, => B) => B) :Stream[B] = ???
 
 }
 case object Empty extends Stream[Nothing]
